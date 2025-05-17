@@ -1,4 +1,4 @@
-DB_HOST=mysql.railway.internal
+DB_HOST=containers-us-west-xx.railway.app
 DB_USER=root
 DB_PASSWORD=cuNlsIsieWIpAIDtiQyIaqOiZRuFxuJn
 DB_NAME=railway
