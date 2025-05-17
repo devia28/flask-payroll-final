@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Employee Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            margin: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 220px;
+            background-color: #343a40;
+            color: white;
+            padding-top: 20px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 15px 20px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .main-container {
+            margin-left: 220px;
+            padding: 30px;
+            flex: 1;
+        }
+        .flex-wrapper {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+        }
+        .employee-container {
+            width: 35%;
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .employee-details-container {
+            width: 60%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .empImage {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+        }
+        label {
+            font-weight: bold;
+        }
+        .selected-row {
+            background-color: #d0ebff !important;
+        }
+        @media screen and (max-width: 768px) {
+            .flex-wrapper {
+                flex-direction: column;
+            }
+            .employee-container,
+            .employee-details-container {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+          <h5 class="text-white text-center mb-4">Payroll System</h5>
+    <a href="{{ url_for('admin_home') }}">Dashboard</a>
+    <a href="{{ url_for('manage_employees') }}">Manage Employees</a>
+    <a href="{{ url_for('accounting') }}">Accounting</a>
+    <a href="{{ url_for('payroll_reports') }}">Payroll Reports</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+
+    <div class="main-container">
+        <h2 class="text-center mb-4">Employee Management</h2>
+        <div class="flex-wrapper">
+            <!-- Employee Table -->
+            <div class="employee-container">
+                <input type="text" id="search" class="form-control mb-3" placeholder="Search employee by name..." />
+                <table class="table table-bordered table-hover" id="employeeTable">
+                    <thead class="table-light">
+                        <tr><th>ID</th><th>Name</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for staff in staff_list %}
+                        <tr data-id="{{ staff.id }}">
+                            <td>{{ staff.id }}</td>
+                            <td>{{ staff.first_name }} {{ staff.surname }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <!-- Action Buttons -->
+<div class="d-flex justify-content-end mb-3 gap-2">
+    <a href="{{ url_for('add_employee') }}" class="btn btn-primary">Add Employee</a>
+    <button id="editBtn" class="btn btn-warning" disabled>Edit</button>
+    <form id="deleteForm" method="POST" style="display: inline;">
+        <input type="hidden" name="employee_id" id="deleteEmployeeId" />
+        <button
+            type="submit"
+            class="btn btn-danger"
+            id="deleteBtn"
+            disabled
+            onclick="return confirm('Are you sure you want to fire this employee?');"
+        >
+            Fire
+        </button>
+    </form>
+</div>
+
+            </div>
+
+            <!-- Employee Details -->
+            <div class="employee-details-container">
+                <img id="emp-photo" class="empImage" src="{{ url_for('static', filename='default-photo.jpg') }}" alt="Employee photo" />
+                <h3 id="emp-name">Select an employee</h3>
+                <p><strong>Email:</strong> <span id="emp-email">N/A</span></p>
+                <p><strong>Salary:</strong> ₱<span id="emp-salary">N/A</span></p>
+                <p><strong>Date of Birth:</strong> <span id="emp-dob">N/A</span></p>
+                <p><strong>Telephone:</strong> <span id="emp-telephone">N/A</span></p>
+                <p><strong>Address:</strong> <span id="emp-address">N/A</span></p>
+                <p><strong>Department:</strong> <span id="emp-department">N/A</span></p>
+                <p><strong>Gender:</strong> <span id="emp-gender">N/A</span></p>
+                <p><strong>Address2:</strong> <span id="emp-address2">N/A</span></p>
+                <p><strong>Apartment:</strong> <span id="emp-apartment">N/A</span></p>
+                <p><strong>Post Code:</strong> <span id="emp-postcode">N/A</span></p>
+                <p><strong>Designation:</strong> <span id="emp-designation">N/A</span></p>
+                <p><strong>Status:</strong> <span id="emp-status">N/A</span></p>
+                <p><strong>Date Hired:</strong> <span id="emp-datehired">N/A</span></p>
+                <p><strong>Job Title:</strong> <span id="emp-jobtitle">N/A</span></p>
+            </div>
+        </div>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const rows = document.querySelectorAll('#employeeTable tbody tr');
+    const defaultPhoto = "{{ url_for('static', filename='default-photo.jpg') }}";
+
+    const editBtn = document.getElementById('editBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const deleteInput = document.getElementById('deleteEmployeeId');
+
+    function clearDetails() {
+        document.getElementById('emp-name').textContent = 'Select an employee';
+        document.getElementById('emp-email').textContent = 'N/A';
+        document.getElementById('emp-salary').textContent = 'N/A';
+        document.getElementById('emp-dob').textContent = 'N/A';
+        document.getElementById('emp-telephone').textContent = 'N/A';
+        document.getElementById('emp-address').textContent = 'N/A';
+        document.getElementById('emp-department').textContent = 'N/A';
+        document.getElementById('emp-gender').textContent = 'N/A';
+        document.getElementById('emp-address2').textContent = 'N/A';
+        document.getElementById('emp-apartment').textContent = 'N/A';
+        document.getElementById('emp-postcode').textContent = 'N/A';
+        document.getElementById('emp-designation').textContent = 'N/A';
+        document.getElementById('emp-status').textContent = 'N/A';
+        document.getElementById('emp-datehired').textContent = 'N/A';
+        document.getElementById('emp-jobtitle').textContent = 'N/A';
+        document.getElementById('emp-photo').src = defaultPhoto;
+
+        editBtn.disabled = true;
+        deleteBtn.disabled = true;
+        deleteInput.value = '';
+    }
+
+    rows.forEach(row => {
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', () => {
+            // Highlight selected row
+            rows.forEach(r => r.classList.remove('selected-row'));
+            row.classList.add('selected-row');
+
+            const empId = row.getAttribute('data-id');
+
+            // Enable action buttons
+            editBtn.disabled = false;
+            deleteBtn.disabled = false;
+            deleteInput.value = empId;
+
+            // Set edit button link dynamically
+            editBtn.onclick = () => {
+                window.location.href = `/edit_employee/${empId}`;
+            };
+
+            // Fetch and display employee details
+            fetch(`/get_staff_details?id=${empId}`, {
+  headers: {
+    'x-api-key': 'jopri'
+  }
+})
+.then(response => response.json())
+.then(data => {
+    if (data.error) {
+        alert(data.error);
+        clearDetails();
+        return;
+    }
+
+    document.getElementById('emp-name').textContent = `${data.first_name} ${data.surname}`;
+    document.getElementById('emp-email').textContent = data.email || 'N/A';
+    document.getElementById('emp-salary').textContent = data.salary || 'N/A';
+    document.getElementById('emp-dob').textContent = data.dob || 'N/A';
+    document.getElementById('emp-telephone').textContent = data.telephone || 'N/A';
+    document.getElementById('emp-address').textContent = data.address || 'N/A';
+    document.getElementById('emp-department').textContent = data.department || 'N/A';
+    document.getElementById('emp-gender').textContent = data.gender || 'N/A';
+    document.getElementById('emp-address2').textContent = data.address2 || 'N/A';
+    document.getElementById('emp-apartment').textContent = data.apartment || 'N/A';
+    document.getElementById('emp-postcode').textContent = data.post_code || 'N/A';
+    document.getElementById('emp-designation').textContent = data.designation || 'N/A';
+    document.getElementById('emp-status').textContent = data.status || 'N/A';
+    document.getElementById('emp-datehired').textContent = data.date_hired || 'N/A';
+    document.getElementById('emp-jobtitle').textContent = data.job_title || 'N/A';
+
+    const photo = document.getElementById('emp-photo');
+    if (data.image) {
+        photo.src = 'data:image/jpeg;base64,' + data.image;
+    } else {
+        photo.src = defaultPhoto;
+    }
+})
+.catch(err => {
+    console.error('Fetch error:', err);
+    alert('Failed to load employee data.');
+    clearDetails();
+});
+
+        });
+    });
+
+    // Search filter
+    const searchInput = document.getElementById('search');
+    searchInput.addEventListener('input', () => {
+        const value = searchInput.value.toLowerCase();
+        rows.forEach(row => {
+            const name = row.cells[1].textContent.toLowerCase();
+            row.style.display = name.includes(value) ? '' : 'none';
+        });
+    });
+});
+</script>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Accounting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            overflow-x: hidden;
+        }
+        .sidebar {
+            height: 100vh;
+            width: 220px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #343a40;
+            padding-top: 60px;
+        }
+        .sidebar a {
+            color: white;
+            padding: 10px 20px;
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+        .back-button {
+            position: absolute;
+            top: 15px;
+            right: 30px;
+        }
+    </style>
+</head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Accounting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            overflow-x: hidden;
+        }
+        .sidebar {
+            height: 100vh;
+            width: 220px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #343a40;
+            padding-top: 60px;
+        }
+        .sidebar a {
+            color: white;
+            padding: 10px 20px;
+            display: block;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+        .back-button {
+            position: absolute;
+            top: 15px;
+            right: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar Navigation -->
+<div class="sidebar">
+    <h5 class="text-white text-center mb-4">Payroll System</h5>
+    <a href="{{ url_for('admin_home') }}">Dashboard</a>
+    <a href="{{ url_for('manage_employees') }}">Manage Employees</a>
+    <a href="{{ url_for('accounting') }}">Accounting</a>
+    <a href="{{ url_for('payroll_reports') }}">Payroll Reports</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+    <a href="{{ url_for('admin_home') }}" class="btn btn-secondary back-button">← Back</a>
+
+    <h2 class="mb-4">Accounting Dashboard</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Form Start -->
+    <form method="post" class="mb-4">
+        <!-- Employee Selection -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="empId" class="form-label">Select Employee</label>
+                <select name="empId" id="empId" class="form-select" required>
+                    <option value="">-- Choose an Employee --</option>
+                    {% for emp in employees %}
+                        <option value="{{ emp.empId }}">{{ emp.first_name }} {{ emp.surname }} (₱{{ emp.salary }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Allowance Section -->
+        <div class="card mt-4">
+            <div class="card-header">Add Allowance</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="allowance_type" class="form-label">Allowance Type</label>
+                        <select class="form-select" name="allowance_type" required>
+                            <option value="">-- Select Allowance Type --</option>
+                            <option value="Salary">Salary</option>
+                            <option value="Medical">Medical</option>
+                            <option value="Bonus">Bonus</option>
+                            <option value="Overtime">Overtime</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="allowance_amount" class="form-label">Amount</label>
+                        <input type="number" step="0.01" class="form-control" name="allowance_amount" required />
+                    </div>
+                </div>
+                <button type="submit" name="allowance_submit" class="btn btn-success mt-3">Add Allowance</button>
+            </div>
+        </div>
+
+        <!-- Deduction Section -->
+        <div class="card mt-4">
+            <div class="card-header">Add Deduction</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="deduction_reason" class="form-label">Reason</label>
+                        <input type="text" class="form-control" name="deduction_reason" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="deduction_amount" class="form-label">Amount</label>
+                        <input type="number" step="0.01" class="form-control" name="deduction_amount" required />
+                    </div>
+                </div>
+                <button type="submit" name="deduction_submit" class="btn btn-danger mt-3">Add Deduction</button>
+            </div>
+        </div>
+
+        <!-- Payroll Release Section -->
+        <div class="card mt-4">
+            <div class="card-header">Release Payroll</div>
+            <div class="card-body">
+                <p>Click below to calculate and release payroll for the selected employee.</p>
+                <button type="submit" name="release_payroll" class="btn btn-primary">Release Payroll</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
