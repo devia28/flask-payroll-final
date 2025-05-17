@@ -1,10 +1,10 @@
 DB_HOST=mysql.railway.internal
 DB_USER=root
-DB_PASSWORD=
-DB_NAME=payroll
+DB_PASSWORD=cuNlsIsieWIpAIDtiQyIaqOiZRuFxuJn
+DB_NAME=railway
 DB_PORT=3306
 
-SECRET_KEY=your_super_secret_key
+SECRET_KEY=geti_elli_zaki_jofi
 API_KEY=jopri
 
 
