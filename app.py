@@ -12,16 +12,30 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
+import os
+import pymysql
+from flask import Flask
 
-# Load environment variables or use default values
+app = Flask(__name__)
+
+# Load environment variables into Flask config
 app.config['MYSQL_HOST'] = os.getenv("DB_HOST", "localhost")
 app.config['MYSQL_USER'] = os.getenv("DB_USER", "root")
 app.config['MYSQL_PASSWORD'] = os.getenv("DB_PASSWORD", "")
 app.config['MYSQL_DB'] = os.getenv("DB_NAME", "payroll")
 app.secret_key = os.getenv("SECRET_KEY", "09067238100")
 
-# Set your API key here or load from env
-API_KEY = os.getenv('09067238100', 'jopri')
+# Set your API key from environment variable (not as a key name)
+API_KEY = os.getenv("API_KEY", "jopri")
+
+# MySQL connection using PyMySQL (for direct queries if needed)
+connection = pymysql.connect(
+    host=app.config['MYSQL_HOST'],
+    user=app.config['MYSQL_USER'],
+    password=app.config['MYSQL_PASSWORD'],
+    database=app.config['MYSQL_DB'],
+    port=int(os.getenv("DB_PORT", 3306))
+)
 
 def require_api_key(f):
     @wraps(f)
